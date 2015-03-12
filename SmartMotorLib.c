@@ -105,7 +105,7 @@
 /*    approx 400uS per 15mS loop, about 3% cpu bandwidth                       */
 /*                                                                             */
 /*-----------------------------------------------------------------------------*/
-
+#pragma SystemFile
 #ifndef __SMARTMOTORLIB__
 #define __SMARTMOTORLIB__
 
