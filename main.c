@@ -26,6 +26,7 @@
 #pragma userControlDuration(120)
 
 #include "Vex_Competition_Includes.c"   //Main competition background code...do not modify!
+#include "SmartMotorLib.c"
 #include "drive.c"
 #include "arm.c"
 #include "general.c"
