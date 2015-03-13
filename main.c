@@ -45,6 +45,6 @@ task usercontrol()
 	init();
 	while (true)
 	{
-
+		userControl(true, true); //(isArcade, isPID)
 	}
 }

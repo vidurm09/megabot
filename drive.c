@@ -59,3 +59,12 @@ void changeLDrive(int change) {
 void changeRDrive(int change) {
 	driveRSetPt += change;
 }
+
+void arcade() {
+	motor[driveRB] = motor[driveRF] = (vexRT[Ch3] - vexRT[Ch1]);
+	motor[driveLB] = motor[driveLF] = (vexRT[Ch3] + vexRT[Ch1]);
+}
+void tank() {
+	motor[driveRB] = motor[driveRF] = vexRT[Ch2];
+	motor[driveLB] = motor[driveLF] = vexRT[Ch3];
+}

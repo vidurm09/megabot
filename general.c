@@ -22,3 +22,17 @@ void init() {
 		hasInit = true;
 	}
 }
+
+void userControl(bool isArcade, bool isArmPID) {
+	if(isArcade) {
+		arcade();
+	} else {
+		tank();
+	}
+	if(isArmPID) {
+		userControlArmPID();
+	} else {
+		stopTask(liftPID);
+		userControlArmPID();
+	}
+}

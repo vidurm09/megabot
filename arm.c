@@ -21,6 +21,8 @@ float leftLift() { return getEncoderForMotor(liftLA); }
 
 float rightLift() { return getEncoderForMotor(liftRA); }
 
+float liftAvg() { return ((leftLift() + rightLift())/2);}
+
 task liftPID() {
 	int lError = 0;
 	int lPrevError = 0;
@@ -53,4 +55,24 @@ void startLiftPID(int kp, int kd = 0, int ki = 0) {
 
 void moveLift(int change) {
 	liftSetPt += change;
+}
+
+void userControlArmPID() {
+	if(vexRT[Btn6D]) {
+		liftSetPt = liftAvg() - 40;
+	} else if(vexRT[Btn6U]) {
+		liftSetPt = liftAvg() + 40;
+	} else {
+		liftSetPt = liftAvg() + 3;
+	}
+}
+
+void userControlArmNoPID() {
+	if(vexRT[Btn6D]) {
+		setLift(-127);
+	} else if(vexRT[Btn6U]) {
+		setLift(127);
+	} else {
+		setLift(10);
+	}
 }
