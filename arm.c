@@ -1,15 +1,21 @@
 #pragma systemFile
-int liftkp = 0;
+int liftkp = 10;
 int liftkd = 0;
 int liftki = 0;
 int liftSetPt = 0;
+int prevSetPt = 0;
+bool armLoop = false;
 
 void setLiftRight(int power) {
 	SetMotor(liftRA, power);
+	SetMotor(liftRB, power);
+	SetMotor(liftRC, power);
 }
 
 void setLiftLeft(int power) {
 	SetMotor(liftLA, power);
+	SetMotor(liftLB, power);
+	SetMotor(liftLC, power);
 }
 
 void setLift(int power) {
@@ -34,7 +40,7 @@ task liftPID() {
 	int rDerivative = 0;
 	while(true) {
 		lError = liftSetPt - leftLift();
-		rError = liftSetPt - leftLift();
+		rError = liftSetPt - rightLift();
 		lIntegral += lError;
 		rIntegral += rError;
 		lDerivative = lError - lPrevError;
@@ -60,10 +66,15 @@ void moveLift(int change) {
 void userControlArmPID() {
 	if(vexRT[Btn6D]) {
 		liftSetPt = liftAvg() - 40;
+		armLoop = false;
 	} else if(vexRT[Btn6U]) {
 		liftSetPt = liftAvg() + 40;
+		armLoop = false;
 	} else {
-		liftSetPt = liftAvg() + 3;
+		if(!armLoop) {
+			liftSetPt = liftAvg();
+		}
+		armLoop = true;
 	}
 }
 

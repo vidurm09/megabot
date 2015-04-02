@@ -1,5 +1,5 @@
 #pragma systemFile
-int drivekp = 0;
+int drivekp = 10;
 int drivekd = 0;
 int driveki = 0;
 int driveLSetPt = 0;
@@ -32,8 +32,8 @@ task drivePID() {
 	int rIntegral = 0;
 	int rDerivative = 0;
 	while(true) {
-		lError = driveLSetPt - leftdrive();
-		rError = driveRSetPt - leftdrive();
+		lError = driveLSetPt - leftDrive();
+		rError = driveRSetPt - leftDrive();
 		lIntegral += lError;
 		rIntegral += rError;
 		lDerivative = lError - lPrevError;

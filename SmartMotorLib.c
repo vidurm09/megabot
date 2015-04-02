@@ -664,12 +664,12 @@ void
 SmartMotorRun()
 {
     // Higher priority than slew rate task
-    StartTask( SmartMotorTask , 100 );
+    startTask( SmartMotorTask , 100 );
     // Higher priority than most user tasks
-    StartTask( SmartMotorSlewRateTask, 99 );
+    startTask( SmartMotorSlewRateTask, 99 );
 
     // Initialize resource semaphore
-    SemaphoreInitialize(MotorSemaphore);
+    semaphoreInitialize(MotorSemaphore);
 }
 
 /*-----------------------------------------------------------------------------*/
@@ -682,8 +682,8 @@ SmartMotorStop()
     SmartMotorPtcMonitorDisable();
     SmartMotorCurrentMonitorDisable();
 
-    StopTask( SmartMotorTask );
-    StopTask( SmartMotorSlewRateTask );
+    stopTask( SmartMotorTask );
+    stopTask( SmartMotorSlewRateTask );
 }
 
 /*-----------------------------------------------------------------------------*/
@@ -778,16 +778,16 @@ void
 MotorLibInit()
 {
     SmartMotorStop();
-    StartTask( SmartMotorSlewRateTask );
+    startTask( SmartMotorSlewRateTask );
 
     // Initialize resource semaphore
-    SemaphoreInitialize(MotorSemaphore);
+    semaphoreInitialize(MotorSemaphore);
 }
 
 int
 MotorGetSemaphore()
 {
-    SemaphoreLock( MotorSemaphore, 2);
+    semaphoreLock( MotorSemaphore, 2);
 
     short s = getSemaphoreTaskOwner(MotorSemaphore);
 
@@ -802,7 +802,7 @@ MotorReleaseSemaphore()
 {
     short s = getSemaphoreTaskOwner(MotorSemaphore);
     if ( s == nCurrentTask )
-        SemaphoreUnlock(MotorSemaphore);
+        semaphoreUnlock(MotorSemaphore);
 }
 
 /*-----------------------------------------------------------------------------*/

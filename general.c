@@ -3,15 +3,15 @@ bool hasInit = false;
 void init() {
 	if(!hasInit) {
 		SmartMotorsInit();
-		SmartMotorsAddPowerExtender(driveLF, driveLB, driveRF, driveRB);
-		SmartMotorSetPowerExpanderStatusPort(powerExpander);
+		//SmartMotorsAddPowerExtender(liftLB, liftLC, liftRB, liftRC);
+		//SmartMotorSetPowerExpanderStatusPort(powerExpander);
 		SmartMotorLinkMotors(driveLF, driveLB);
 		SmartMotorLinkMotors(driveRF, driveRB);
 		SmartMotorLinkMotors(liftLA, liftLB);
 		SmartMotorLinkMotors(liftLA, liftLC);
 		SmartMotorLinkMotors(liftRA, liftRB);
 		SmartMotorLinkMotors(liftRA, liftRC);
-		SmartMotorCurrentMonitorEnable();
+		//SmartMotorCurrentMonitorEnable();
 		SmartMotorsSetEncoderGearing(liftLA, 1.0/3.0);
 		SmartMotorsSetEncoderGearing(liftLB, 1.0/3.0);
 		SmartMotorsSetEncoderGearing(liftLC, 1.0/3.0);
@@ -19,6 +19,7 @@ void init() {
 		SmartMotorsSetEncoderGearing(liftRB, 1.0/3.0);
 		SmartMotorsSetEncoderGearing(liftRC, 1.0/3.0);
 		SmartMotorRun();
+		startLiftPID(10);
 		hasInit = true;
 	}
 }
