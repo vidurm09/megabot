@@ -34,6 +34,6 @@ void userControl(bool isArcade, bool isArmPID) {
 		userControlArmPID();
 	} else {
 		stopTask(liftPID);
-		userControlArmPID();
+		userControlArmNoPID();
 	}
 }

@@ -1,7 +1,7 @@
 #pragma systemFile
-int liftkp = 10;
-int liftkd = 0;
-int liftki = 0;
+float liftkp = 10;
+float liftkd = 0;
+float liftki = 0;
 int liftSetPt = 0;
 int prevSetPt = 0;
 bool armLoop = false;
@@ -23,21 +23,21 @@ void setLift(int power) {
 	setLiftLeft(power);
 }
 
-float leftLift() { return getEncoderForMotor(liftLA); }
+float leftLift() { return SensorValue[lLiftEncoder]; }
 
-float rightLift() { return getEncoderForMotor(liftRA); }
+float rightLift() { return SensorValue[rLiftEncoder]; }
 
 float liftAvg() { return ((leftLift() + rightLift())/2);}
 
 task liftPID() {
-	int lError = 0;
-	int lPrevError = 0;
-	int lIntegral = 0;
-	int lDerivative = 0;
-	int rError = 0;
-	int rPrevError = 0;
-	int rIntegral = 0;
-	int rDerivative = 0;
+	float lError = 0;
+	float lPrevError = 0;
+	float lIntegral = 0;
+	float lDerivative = 0;
+	float rError = 0;
+	float rPrevError = 0;
+	float rIntegral = 0;
+	float rDerivative = 0;
 	while(true) {
 		lError = liftSetPt - leftLift();
 		rError = liftSetPt - rightLift();
@@ -52,10 +52,10 @@ task liftPID() {
 	}
 }
 
-void startLiftPID(int kp, int kd = 0, int ki = 0) {
-	liftkp = kp;
-	liftkd = kd;
-	liftki = ki;
+void startLiftPID(float kp, float kd = 0, float ki = 0) {
+	liftkp = 1.8;
+	liftkd = 100;
+	liftki = 0.000001;
 	startTask(liftPID);
 }
 
@@ -65,14 +65,15 @@ void moveLift(int change) {
 
 void userControlArmPID() {
 	if(vexRT[Btn6D]) {
-		liftSetPt = liftAvg() - 40;
+		liftSetPt = liftAvg() - 70;
 		armLoop = false;
 	} else if(vexRT[Btn6U]) {
-		liftSetPt = liftAvg() + 40;
+		liftSetPt = liftAvg() + 70;
 		armLoop = false;
 	} else {
 		if(!armLoop) {
 			liftSetPt = liftAvg();
+			writeDebugStreamLine("Set PID to: %d, avg is at %d", liftSetPt, liftAvg());
 		}
 		armLoop = true;
 	}
@@ -84,6 +85,6 @@ void userControlArmNoPID() {
 	} else if(vexRT[Btn6U]) {
 		setLift(127);
 	} else {
-		setLift(10);
+		setLift(0);
 	}
 }
