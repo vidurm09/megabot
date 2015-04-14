@@ -23,17 +23,17 @@ float leftDrive() { return getEncoderForMotor(driveLF); }
 float rightDrive() { return getEncoderForMotor(driveRF); }
 
 task drivePID() {
-	int lError = 0;
-	int lPrevError = 0;
-	int lIntegral = 0;
-	int lDerivative = 0;
-	int rError = 0;
-	int rPrevError = 0;
-	int rIntegral = 0;
-	int rDerivative = 0;
+	float lError = 0;
+	float lPrevError = 0;
+	float lIntegral = 0;
+	float lDerivative = 0;
+	float rError = 0;
+	float rPrevError = 0;
+	float rIntegral = 0;
+	float rDerivative = 0;
 	while(true) {
 		lError = driveLSetPt - leftDrive();
-		rError = driveRSetPt - leftDrive();
+		rError = driveRSetPt - rightDrive();
 		lIntegral += lError;
 		rIntegral += rError;
 		lDerivative = lError - lPrevError;
@@ -58,6 +58,16 @@ void changeLDrive(int change) {
 
 void changeRDrive(int change) {
 	driveRSetPt += change;
+}
+
+void changeDrive(int change) {
+	changeLDrive(change);
+	changeRDrive(change);
+}
+
+void changeDrive(int changeLeft, int changeRight) {
+	changeLDrive(changeLeft);
+	changeRDrive(changeRight);
 }
 
 void arcade() {

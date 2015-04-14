@@ -12,15 +12,16 @@ void init() {
 		SmartMotorLinkMotors(liftRA, liftRB);
 		SmartMotorLinkMotors(liftRA, liftRC);
 		//SmartMotorCurrentMonitorEnable();
-		SmartMotorsSetEncoderGearing(liftLA, 1.0/3.0);
-		SmartMotorsSetEncoderGearing(liftLB, 1.0/3.0);
-		SmartMotorsSetEncoderGearing(liftLC, 1.0/3.0);
-		SmartMotorsSetEncoderGearing(liftRA, 1.0/3.0);
-		SmartMotorsSetEncoderGearing(liftRB, 1.0/3.0);
-		SmartMotorsSetEncoderGearing(liftRC, 1.0/3.0);
+		SmartMotorsSetEncoderGearing(liftLA, 0.04);
+		SmartMotorsSetEncoderGearing(liftLB, 0.04);
+		SmartMotorsSetEncoderGearing(liftLC, 0.04);
+		SmartMotorsSetEncoderGearing(liftRA, 0.04);
+		SmartMotorsSetEncoderGearing(liftRB, 0.04);
+		SmartMotorsSetEncoderGearing(liftRC, 0.04);
 		SmartMotorRun();
-		startLiftPID(10);
+		startLiftPID(30);
 		hasInit = true;
+		startTask(solenoidControl);
 	}
 }
 
@@ -36,4 +37,5 @@ void userControl(bool isArcade, bool isArmPID) {
 		stopTask(liftPID);
 		userControlArmNoPID();
 	}
+
 }

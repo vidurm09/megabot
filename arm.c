@@ -23,9 +23,43 @@ void setLift(int power) {
 	setLiftLeft(power);
 }
 
-float leftLift() { return SensorValue[lLiftEncoder]; }
+bool cubeIsOpen = false;
+bool skyIsOpen = false;
 
-float rightLift() { return SensorValue[rLiftEncoder]; }
+void cubeControl(bool control) {
+	if(control && cubeIsOpen) {
+		SensorValue[dumpSolenoid] = 1;
+		cubeIsOpen = false;
+		wait1Msec(250);
+	} else if(control && !cubeIsOpen) {
+		SensorValue[dumpSolenoid] = 0;
+		cubeIsOpen = true;
+		wait1Msec(250);
+	}
+}
+
+void skyControl(bool control) {
+	if(control && skyIsOpen) {
+		SensorValue[skySolenoid] = 1;
+		skyIsOpen = false;
+		wait1Msec(250);
+	} else if(control && !skyIsOpen) {
+		SensorValue[skySolenoid] = 0;
+		skyIsOpen = true;
+		wait1Msec(250);
+	}
+}
+
+task solenoidControl() {
+	while(true) {
+		cubeControl(vexRT[Btn5D]);
+		skyControl(vexRT[Btn5U]);
+	}
+}
+
+float leftLift() { return -SensorValue[lLiftEncoder]; }
+
+float rightLift() { return -SensorValue[rLiftEncoder]; }
 
 float liftAvg() { return ((leftLift() + rightLift())/2);}
 
@@ -45,8 +79,26 @@ task liftPID() {
 		rIntegral += rError;
 		lDerivative = lError - lPrevError;
 		rDerivative = rError - rPrevError;
-		setLiftLeft((liftkp*lError)+(liftki*lIntegral)+(liftkd*lDerivative));
-		setLiftRight((liftkp*rError)+(liftki*rIntegral)+(liftkd*rDerivative));
+		float lPower = (liftkp*lError)+(liftki*lIntegral)+(liftkd*lDerivative);
+		float rPower = (liftkp*rError)+(liftki*rIntegral)+(liftkd*rDerivative);
+
+		if(lError - rError > 0) {
+			if(lPower > 127)
+				lPower = 127;
+			//lPower = lPower*(1-((lError-rError)/127));
+
+			//rPower = rPower + rPower*(((lError-rError)/127));
+		}
+		if(rError - lError > 0) {
+			if(rPower > 127)
+				rPower = 127;
+			//rPower = rPower*(1-((rError-lError)/127));
+
+			//lPower = lPower + lPower*(((rError-lError)/127));
+		}
+
+		setLiftLeft(lPower);
+		setLiftRight(rPower);
 		lPrevError = lError;
 		rPrevError = rError;
 	}

@@ -4,6 +4,7 @@
 #pragma config(Sensor, dgtl5,  rLiftEncoder,   sensorQuadEncoder)
 #pragma config(Sensor, dgtl7,  lLiftEncoder,   sensorQuadEncoder)
 #pragma config(Sensor, dgtl9,  dumpSolenoid,   sensorDigitalOut)
+#pragma config(Sensor, dgtl10, skySolenoid,    sensorDigitalOut)
 #pragma config(Sensor, dgtl11, liftDetectLeft, sensorTouch)
 #pragma config(Sensor, dgtl12, liftDetectRight, sensorTouch)
 #pragma config(Motor,  port1,           driveRF,       tmotorVex393HighSpeed_HBridge, openLoop)
@@ -39,6 +40,7 @@ void pre_auton()
 task autonomous()
 {
   init();
+  auton();
 }
 
 task usercontrol()
