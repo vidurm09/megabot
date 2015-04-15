@@ -63,6 +63,9 @@ float rightLift() { return -SensorValue[rLiftEncoder]; }
 
 float liftAvg() { return ((leftLift() + rightLift())/2);}
 
+float konstant = 1;
+float deadzone = 10;
+
 task liftPID() {
 	float lError = 0;
 	float lPrevError = 0;
@@ -75,6 +78,7 @@ task liftPID() {
 	while(true) {
 		lError = liftSetPt - leftLift();
 		rError = liftSetPt - rightLift();
+		writeDebugStreamLine("R: %f L: %f", rError, lError);
 		lIntegral += lError;
 		rIntegral += rError;
 		lDerivative = lError - lPrevError;
@@ -82,19 +86,12 @@ task liftPID() {
 		float lPower = (liftkp*lError)+(liftki*lIntegral)+(liftkd*lDerivative);
 		float rPower = (liftkp*rError)+(liftki*rIntegral)+(liftkd*rDerivative);
 
-		if(lError - rError > 0) {
-			if(lPower > 127)
-				lPower = 127;
-			//lPower = lPower*(1-((lError-rError)/127));
-
-			//rPower = rPower + rPower*(((lError-rError)/127));
-		}
-		if(rError - lError > 0) {
-			if(rPower > 127)
-				rPower = 127;
-			//rPower = rPower*(1-((rError-lError)/127));
-
-			//lPower = lPower + lPower*(((rError-lError)/127));
+		if(rError - lError < 0) {
+			rPower = (abs(rPower)<127) ? (rPower + abs(rError/lError) * konstant) : 127;
+			lPower = (abs(lPower)<127) ? (lPower - abs(rError/lError) * konstant) : 127;
+		} else if(rError - lError > 0) {
+			rPower -= abs(rError/lError) * konstant;
+			lPower += abs(rError/lError) * konstant;
 		}
 
 		setLiftLeft(lPower);
@@ -105,26 +102,36 @@ task liftPID() {
 }
 
 void startLiftPID(float kp, float kd = 0, float ki = 0) {
-	liftkp = 1.8;
-	liftkd = 100;
-	liftki = 0.000001;
+	liftkp = kp;
+	liftkd = kd;//100;
+	liftki = ki;//0.000001;
 	startTask(liftPID);
 }
 
 void moveLift(int change) {
 	liftSetPt += change;
 }
-
+int prev = 0;
 void userControlArmPID() {
 	if(vexRT[Btn6D]) {
 		liftSetPt = liftAvg() - 70;
+		prev = -1;
 		armLoop = false;
 	} else if(vexRT[Btn6U]) {
 		liftSetPt = liftAvg() + 70;
+		prev = 1;
 		armLoop = false;
 	} else {
 		if(!armLoop) {
-			liftSetPt = liftAvg();
+			if(prev==1) {
+				liftSetPt = liftAvg()+20;
+			}
+			else if(prev==-1){
+				liftSetPt = liftAvg()-20;
+			}
+			else {
+				liftSetPt = liftAvg();
+			}
 			writeDebugStreamLine("Set PID to: %d, avg is at %d", liftSetPt, liftAvg());
 		}
 		armLoop = true;

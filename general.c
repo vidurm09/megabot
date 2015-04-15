@@ -19,7 +19,7 @@ void init() {
 		SmartMotorsSetEncoderGearing(liftRB, 0.04);
 		SmartMotorsSetEncoderGearing(liftRC, 0.04);
 		SmartMotorRun();
-		startLiftPID(30);
+		startLiftPID(1.8);
 		hasInit = true;
 		startTask(solenoidControl);
 	}
