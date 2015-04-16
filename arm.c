@@ -1,5 +1,6 @@
 #pragma systemFile
 float liftkp = 10;
+float liftdownkp = 5;
 float liftkd = 0;
 float liftki = 0;
 int liftSetPt = 0;
@@ -25,35 +26,60 @@ void setLift(int power) {
 
 bool cubeIsOpen = false;
 bool skyIsOpen = false;
+bool cubePress = false;
+bool skyPress = false;
 
 void cubeControl(bool control) {
-	if(control && cubeIsOpen) {
+	//if(control)
+	//{
+	//	if(cubeIsOpen && !cubePress)
+	//	{
+	//		SensorValue[dumpSolenoid] = 1;
+	//		cubePress = true;
+	//	}
+	//	else if(!cubeIsOpen && !cubePress)
+	//	{
+	//		SensorValue[dumpSolenoid] = 0;
+	//		cubePress = true;
+	//	}
+	//}
+	//else
+	//{
+	//	cubePress = false;
+	//}
+	if(control && cubeIsOpen && !cubePress) {
+		cubePress = true;
 		SensorValue[dumpSolenoid] = 1;
 		cubeIsOpen = false;
-		wait1Msec(250);
-	} else if(control && !cubeIsOpen) {
+	} else if(control && !cubeIsOpen && !cubePress) {
+		cubePress = true;
 		SensorValue[dumpSolenoid] = 0;
 		cubeIsOpen = true;
-		wait1Msec(250);
+	} else if(!control)
+	{
+		cubePress = false;
 	}
 }
 
 void skyControl(bool control) {
-	if(control && skyIsOpen) {
+	if(control && skyIsOpen && !skyPress) {
+		skyPress = true;
 		SensorValue[skySolenoid] = 1;
 		skyIsOpen = false;
-		wait1Msec(250);
-	} else if(control && !skyIsOpen) {
+	} else if(control && !skyIsOpen && !skyPress) {
+		skyPress = true;
 		SensorValue[skySolenoid] = 0;
 		skyIsOpen = true;
-		wait1Msec(250);
+	} else if(!control)
+	{
+		skyPress = false;
 	}
 }
 
 task solenoidControl() {
 	while(true) {
-		cubeControl(vexRT[Btn5D]);
-		skyControl(vexRT[Btn5U]);
+		cubeControl(vexRT[Btn6D]);
+		skyControl(vexRT[Btn6U]);
 	}
 }
 
@@ -61,7 +87,7 @@ float leftLift() { return -SensorValue[lLiftEncoder]; }
 
 float rightLift() { return -SensorValue[rLiftEncoder]; }
 
-float liftAvg() { return ((leftLift() + rightLift())/2);}
+float liftAvg() { return ((leftLift() + rightLift())/2.0);}
 
 float konstant = 1;
 float deadzone = 10;
@@ -83,17 +109,54 @@ task liftPID() {
 		rIntegral += rError;
 		lDerivative = lError - lPrevError;
 		rDerivative = rError - rPrevError;
-		float lPower = (liftkp*lError)+(liftki*lIntegral)+(liftkd*lDerivative);
-		float rPower = (liftkp*rError)+(liftki*rIntegral)+(liftkd*rDerivative);
+		float realkp = liftkp;
+		if(lError<0) {
+			realkp = liftdownkp;
+		}
+		float lPower = (realkp*lError)+(liftki*lIntegral)+(liftkd*lDerivative);
+		realkp = liftkp;
+		if(rError<0) {
+			realkp = liftdownkp;
+		}
+		float rPower = (realkp*rError)+(liftki*rIntegral)+(liftkd*rDerivative);
 
-		if(rError - lError < 0) {
-			rPower = (abs(rPower)<127) ? (rPower + abs(rError/lError) * konstant) : 127;
-			lPower = (abs(lPower)<127) ? (lPower - abs(rError/lError) * konstant) : 127;
+		/*if(rError - lError < 0) {
+			if(abs(rPower)>127) {
+				rPower = 127*rPower/abs(rPower);
+			}
+			rPower = rPower + abs(rError/lError) * konstant;
+			if(abs(lPower)>127) {
+				lPower = 127*lPower/abs(lPower);
+			}
+			lPower = lPower - abs(rError/lError) * konstant;
 		} else if(rError - lError > 0) {
-			rPower -= abs(rError/lError) * konstant;
-			lPower += abs(rError/lError) * konstant;
+			if(abs(rPower)>127) {
+				rPower = 127*rPower/abs(rPower);
+			}
+			rPower = rPower - abs(rError/lError) * konstant;
+			if(abs(lPower)>127) {
+				lPower = 127*lPower/abs(lPower);
+			}
+			lPower = lPower + abs(rError/lError) * konstant;
+		}*/
+		if(abs(rPower) > 127) {
+			rPower = 127*rPower/abs(rPower);
+		}
+		if(abs(rPower) > 40) {
+			if(lError != 0) {
+				rPower = rPower * abs(rError/lError);
+			}
 		}
 
+		if(abs(lPower) > 127) {
+			lPower = 127*lPower/abs(lPower);
+		}
+
+		if(abs(lPower) > 40) {
+			if(rError != 0) {
+				lPower = lPower * abs(lError/rError);
+			}
+		}
 		setLiftLeft(lPower);
 		setLiftRight(rPower);
 		lPrevError = lError;
@@ -103,6 +166,7 @@ task liftPID() {
 
 void startLiftPID(float kp, float kd = 0, float ki = 0) {
 	liftkp = kp;
+	liftdownkp = kp;
 	liftkd = kd;//100;
 	liftki = ki;//0.000001;
 	startTask(liftPID);
@@ -113,21 +177,21 @@ void moveLift(int change) {
 }
 int prev = 0;
 void userControlArmPID() {
-	if(vexRT[Btn6D]) {
-		liftSetPt = liftAvg() - 70;
+	if(vexRT[Btn5D]) {
+		liftSetPt = liftAvg() - 127/liftkp;
 		prev = -1;
 		armLoop = false;
-	} else if(vexRT[Btn6U]) {
-		liftSetPt = liftAvg() + 70;
+	} else if(vexRT[Btn5U]) {
+		liftSetPt = liftAvg() + 127/liftkp;
 		prev = 1;
 		armLoop = false;
 	} else {
 		if(!armLoop) {
 			if(prev==1) {
-				liftSetPt = liftAvg()+20;
+				liftSetPt = liftAvg()+10;
 			}
 			else if(prev==-1){
-				liftSetPt = liftAvg()-20;
+				liftSetPt = liftAvg()-15;
 			}
 			else {
 				liftSetPt = liftAvg();
