@@ -19,13 +19,14 @@ void init() {
 		SmartMotorsSetEncoderGearing(liftRB, 0.04);
 		SmartMotorsSetEncoderGearing(liftRC, 0.04);
 		SmartMotorRun();
-		startLiftPID(3.3);
+		startLiftPID(2.8);
 		hasInit = true;
 		startTask(solenoidControl);
 	}
 }
 
 void userControl(bool isArcade, bool isArmPID) {
+	stopTask(drivePID);
 	if(isArcade) {
 		arcade();
 	} else {

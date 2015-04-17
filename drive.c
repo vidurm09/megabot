@@ -7,10 +7,12 @@ int driveRSetPt = 0;
 
 void setDriveRight(int power) {
 	SetMotor(driveRF, power);
+	SetMotor(driveRB, power);
 }
 
 void setDriveLeft(int power) {
-	SetMotor(driveLF, power);
+	SetMotor(driveLF, -power);
+	SetMotor(driveLB, -power);
 }
 
 void setDrive(int power) {
@@ -18,9 +20,9 @@ void setDrive(int power) {
 	setDriveLeft(power);
 }
 
-float leftDrive() { return getEncoderForMotor(driveLF); }
+float leftDrive() { return -SensorValue[lDriveEncoder]; }
 
-float rightDrive() { return getEncoderForMotor(driveRF); }
+float rightDrive() { return SensorValue[rDriveEncoder]; }
 
 task drivePID() {
 	float lError = 0;
@@ -38,10 +40,11 @@ task drivePID() {
 		rIntegral += rError;
 		lDerivative = lError - lPrevError;
 		rDerivative = rError - rPrevError;
-		setDriveLeft((drivekp*lError)+(driveki*lIntegral)+(drivekd*lDerivative));
-		setDriveRight((drivekp*rError)+(driveki*rIntegral)+(drivekd*rDerivative));
+		setDriveLeft(1*((drivekp*lError)+(driveki*lIntegral)+(drivekd*lDerivative)));
+		setDriveRight(1*((drivekp*rError)+(driveki*rIntegral)+(drivekd*rDerivative)));
 		lPrevError = lError;
 		rPrevError = rError;
+		writeDebugStreamLine("drive: %f, %f", lError, rError);
 	}
 }
 
